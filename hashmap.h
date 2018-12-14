@@ -120,14 +120,20 @@ void hashmapUnlock(Hashmap* map);
  */
 
 /**
- * Hashes int keys. 'key' is a pointer to int.
+ * Hashes int keys.
+ * in hashmapIntHash : 'key' is a pointer to int.
+ * in hashmapLongHash : 'key' is a pointer to long.
  */
 int hashmapIntHash(void* key);
+int hashmapLongHash(void* key);
 
 /**
- * Compares two int keys for equality.
+ * Compares two keys for equality.
+ * in hashmapIntHash : 'key' is a pointer to int.
+ * in hashmapLongHash : 'key' is a pointer to long.
  */
 bool hashmapIntEquals(void* keyA, void* keyB);
+bool hashmapLongEquals(void* keyA, void* keyB);
 
 /**
  * For debugging.

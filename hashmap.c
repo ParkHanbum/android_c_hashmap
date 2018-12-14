@@ -80,7 +80,7 @@ Hashmap* hashmapCreate(size_t initialCapacity,
 /**
  * Hashes the given key.
  */
-static inline int hashKey(Hashmap* map, void* key) {
+static int hashKey(Hashmap* map, void* key) {
     int h = map->hash(key);
 
     // We apply this secondary hashing discovered by Doug Lea to defend
@@ -351,55 +351,4 @@ bool hashmapIntEquals(void* keyA, void* keyB) {
     int a = *((int*) keyA);
     int b = *((int*) keyB);
     return a == b;
-}
-
-struct str_parms {
-    Hashmap *map;
-};
-
-
-static bool str_eq(void *key_a, void *key_b)
-{
-    return !strcmp((const char *)key_a, (const char *)key_b);
-}
-
-/* use djb hash unless we find it inadequate */
-static int str_hash_fn(void *str)
-{
-    unsigned int hash = 5381;
-    char *p;
-
-    for (p = str; p && *p; p++)
-        hash = ((hash << 5) + hash) + *p;
-    return (int)hash;
-}
-
-bool iterator(void* key, void* value, void* context) 
-{
-	printf("KEY : %s, VALUE : %d\n", (const char *)key, *(int *)value);
-	return true;
-}
-
-int main() {
-	Hashmap *map;
-	map = hashmapCreate(10, str_hash_fn, str_eq);
-
-	int valueA = 1;
-	int valueB = 2;
-	int valueC = 3;
-	hashmapPut(map, "A", &valueA);
-	hashmapPut(map, "B", &valueB);
-	hashmapPut(map, "C", &valueC);
-
-	int getA = *(int *)hashmapGet(map, "A");
-	int getB = *(int *)hashmapGet(map, "B");
-	int getC = *(int *)hashmapGet(map, "C");
-	
-	printf("RESULT : %x  %x  %x\n", getA, getB, getC);
-	
-	printf("Start Iterating...  \n");
-	hashmapForEach(map, iterator, map); 
-	printf("End Iterating...  \n");
-
-	return 0;
 }
