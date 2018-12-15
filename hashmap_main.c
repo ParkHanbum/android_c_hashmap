@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include "threads.h"
 #include "hashmap.h"
+#include "common.h"
 
 int test();
 
@@ -47,11 +48,8 @@ bool iterator(void* key, void* value, void* context)
 	return true;
 }
 
-#define READELF_TYPE_FUNC "FUNC"
 
 Hashmap *map;
-long func_addr[50000];
-long func_count = 0;
 
 void keep_addr(long address)
 {
@@ -60,20 +58,20 @@ void keep_addr(long address)
 
 void start_bmt()
 {
-	long address;
-	uint32_t size;
+	int count = 0;
+	struct Entry *res;
 
-	hashmapForEach(map, iterator, map);
+	// printf("total funcs : %lu\n", func_count);
 
-	for(int i = 0; i < func_count;i++)
-	{
-		address = func_addr[i];
-		void* res = hashmapGet(map, &address);
-		if (res == NULL) {
-			printf("something wrong : %p %lx\n", map, address);
+	for (;count < func_count;count++) {
+		long addr = func_addr[count];
+		res = (struct Entry *)hashmapGet(map, &addr);
+		// printf("%lx %lx %s\n", res->start, res->end, res->name);
+
+		if (res ==  NULL) {
+			printf("something wrong %lx\n", addr);
 			return;
 		}
-		int size = *(int *)res;
 	}
 }
 
@@ -89,7 +87,7 @@ int main()
 
 	map = hashmapCreate(50000, long_hash_fn, long_eq);
 
-	fp = fopen("node_dbg.syms", "r");
+	fp = fopen(DATA_FILE_NAME, "r");
 /*
 Num:    Value          Size Type    Bind   Vis      Ndx Name
 0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT  UND
