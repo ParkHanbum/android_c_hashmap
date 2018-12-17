@@ -18,27 +18,6 @@ struct Entry {
 	char *name;
 };
 
-static bool long_eq(void *key_a, void *key_b)
-{
-	long keyA = *(long *)key_a;
-	long keyB = *(long *)key_b;
-	return keyA == keyB;
-}
-
-/* use djb hash unless we find it inadequate */
-static int long_hash_fn(void *_long)
-{
-    unsigned int hash = 5381;
-    unsigned long value = *(unsigned long *)_long;
-    unsigned long mask = 0xFF;
-
-    for (int i=0; i < sizeof(long); i++) {
-	    hash = ((hash << 5) + hash) + (value & (mask << i*8));
-    }
-    return (int)hash;
-}
-
-
 bool iterator(void* key, void* value, void* context)
 {
 	struct Entry *ent = (struct Entry *)value;
@@ -85,7 +64,7 @@ int main()
 	char bind[1024];
 	char name[1024];
 
-	map = hashmapCreate(50000, long_hash_fn, long_eq);
+	map = hashmapCreate(50000, hashmapDefaultHash, hashmapDefaultEquals);
 
 	fp = fopen(DATA_FILE_NAME, "r");
 /*
@@ -111,7 +90,7 @@ Num:    Value          Size Type    Bind   Vis      Ndx Name
 			// printf("This address already exist\n");
 			hashmapGet(map, ent);
 		}
-		void *oldvalue = hashmapPut(map, ent, ent);
+		void *oldvalue = hashmapPut(map, &ent->start, ent);
 		if (oldvalue != NULL) {
 			struct Entry* _ent = (struct Entry *)oldvalue;
 			// printf("[replaced] %lx %lx %s\n", _ent->start, _ent->end, _ent->name);

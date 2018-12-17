@@ -14,18 +14,25 @@
  * limitations under the License.
  */
 
-/**
- * Hash map.
- */
-
 #ifndef __HASHMAP_H
 #define __HASHMAP_H
 
+#include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
 
-#ifdef __cplusplus
-extern "C" {
+#if defined(__amd64__) || defined(__aarch64__)
+  #define ARCH64
+#else
+  #define ARCH32
+#endif
+
+#if defined(ARCH64)
+  typedef int64_t	hash_t;
+  typedef uint64_t	uhash_t;
+#elif defined(ARCH32)
+  typedef int32_t	hash_t;
+  typedef uint32_t	uhash_t;
 #endif
 
 /** A hash map. */
@@ -39,7 +46,8 @@ typedef struct Hashmap Hashmap;
  * @param equals function which compares keys for equality
  */
 Hashmap* hashmapCreate(size_t initialCapacity,
-        int (*hash)(void* key), bool (*equals)(void* keyA, void* keyB));
+        hash_t (*hash)(void* key),
+	bool (*equals)(void* keyA, void* keyB));
 
 /**
  * Frees the hash map. Does not free the keys or values themselves.
@@ -50,7 +58,7 @@ void hashmapFree(Hashmap* map);
  * Hashes the memory pointed to by key with the given size. Useful for
  * implementing hash functions.
  */
-int hashmapHash(void* key, size_t keySize);
+hash_t hashmapHash(void* key, size_t keySize);
 
 /**
  * Puts value for the given key in the map. Returns pre-existing value if
@@ -73,13 +81,13 @@ void* hashmapGet(Hashmap* map, void* key);
 bool hashmapContainsKey(Hashmap* map, void* key);
 
 /**
- * Gets the value for a key. If a value is not found, this function gets a 
+ * Gets the value for a key. If a value is not found, this function gets a
  * value and creates an entry using the given callback.
  *
  * If memory allocation fails, the callback is not called, this function
  * returns NULL, and errno is set to ENOMEM.
  */
-void* hashmapMemoize(Hashmap* map, void* key, 
+void* hashmapMemoize(Hashmap* map, void* key,
         void* (*initialValue)(void* key, void* context), void* context);
 
 /**
@@ -97,7 +105,7 @@ size_t hashmapSize(Hashmap* map);
  * Invokes the given callback on each entry in the map. Stops iterating if
  * the callback returns false.
  */
-void hashmapForEach(Hashmap* map, 
+void hashmapForEach(Hashmap* map,
         bool (*callback)(void* key, void* value, void* context),
         void* context);
 
@@ -118,22 +126,14 @@ void hashmapUnlock(Hashmap* map);
 /**
  * Key utilities.
  */
-
-/**
- * Hashes int keys.
- * in hashmapIntHash : 'key' is a pointer to int.
- * in hashmapLongHash : 'key' is a pointer to long.
- */
-int hashmapIntHash(void* key);
-int hashmapLongHash(void* key);
+hash_t hashmapDefaultHash(void *key);
 
 /**
  * Compares two keys for equality.
  * in hashmapIntHash : 'key' is a pointer to int.
  * in hashmapLongHash : 'key' is a pointer to long.
  */
-bool hashmapIntEquals(void* keyA, void* keyB);
-bool hashmapLongEquals(void* keyA, void* keyB);
+bool hashmapDefaultEquals(void* keyA, void* keyB);
 
 /**
  * For debugging.
@@ -149,8 +149,4 @@ size_t hashmapCurrentCapacity(Hashmap* map);
  */
 size_t hashmapCountCollisions(Hashmap* map);
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* __HASHMAP_H */ 
+#endif /* __HASHMAP_H */
