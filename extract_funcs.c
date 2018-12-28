@@ -6,7 +6,7 @@
 
 #define READELF_TYPE_FUNC "FUNC"
 
-int main()
+int main(int argc, char **argv)
 {
 	char buf[1024];
 	FILE* fp;
@@ -16,7 +16,7 @@ int main()
 	char bind[1024];
 	char name[1024];
 
-	fp = fopen("node_dbg.syms", "r");
+	fp = fopen(argv[1], "r");
 	/*
 Num:    Value          Size Type    Bind   Vis      Ndx Name
 0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT  UND 
